@@ -1,22 +1,23 @@
 function DayCell({ date, completed, intensity = 0, onClick }) {
   const getColor = () => {
-    if (!completed) return '#ebedf0'
-    if (intensity < 0.25) return '#c6e48b'
-    if (intensity < 0.5)  return '#7bc96f'
-    if (intensity < 0.75) return '#239a3b'
-    return '#196127'
+    if (!completed) return 'var(--cell-empty)'
+    if (intensity < 0.25) return 'var(--cell-1)'
+    if (intensity < 0.5)  return 'var(--cell-2)'
+    if (intensity < 0.75) return 'var(--cell-3)'
+    return 'var(--cell-4)'
   }
 
   return (
     <div
       title={date}
-      onClick={onClick}
+      onClick={completed ? undefined : onClick}
       style={{
-        width: '14px',
-        height: '14px',
+        width: '13px',
+        height: '13px',
         borderRadius: '3px',
         backgroundColor: getColor(),
-        cursor: 'pointer',
+        cursor: completed ? 'default' : 'pointer',
+        transition: 'background-color 0.15s',
       }}
     />
   )

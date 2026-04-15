@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react'
+import { generateYearDays, getTodayString } from '../utils/dateHelpers'
 
-const generateDays = () => {
-  const days = []
-  for (let i = 1; i <= 30; i++) {
-    days.push({
-      date: `2025-04-${String(i).padStart(2, '0')}`,
-      completed: false,
-    })
-  }
-  return days
+const buildDays = () => {
+  const year = new Date().getFullYear()
+  return generateYearDays(year).map((date) => ({
+    date,
+    completed: false,
+  }))
 }
 
 const loadFromStorage = () => {
@@ -32,30 +30,60 @@ function useHabits() {
   }, [habits])
 
   const addHabit = (name) => {
-    const newHabit = {
+    setHabits((prev) => [...prev, {
       id: Date.now(),
       name,
-      days: generateDays(),
-    }
-    setHabits([...habits, newHabit])
+      type: 'default',
+      days: buildDays(),
+    }])
   }
 
-  const toggleDay = (habitId, date) => {
-    setHabits(habits.map((habit) =>
+  const addStudyHabit = (name) => {
+    setHabits((prev) => [...prev, {
+      id: Date.now(),
+      name,
+      type: 'study',
+      days: buildDays(),
+      topics: [],
+    }])
+  }
+
+const toggleDay = (habitId, date) => {
+  setHabits((prev) => prev.map((habit) =>
+    habit.id !== habitId ? habit : {
+      ...habit,
+      days: habit.days.map((d) =>
+        d.date !== date || d.completed ? d : { ...d, completed: true }
+      ),
+    }
+  ))
+}
+
+  const deleteHabit = (habitId) => {
+    setHabits((prev) => prev.filter((h) => h.id !== habitId))
+  }
+
+  const addTopic = (habitId, topicName) => {
+    setHabits((prev) => prev.map((habit) =>
       habit.id !== habitId ? habit : {
         ...habit,
-        days: habit.days.map((d) =>
-          d.date !== date ? d : { ...d, completed: !d.completed }
+        topics: [...habit.topics, { id: Date.now(), name: topicName, progress: 0 }],
+      }
+    ))
+  }
+
+  const updateTopicProgress = (habitId, topicId, progress) => {
+    setHabits((prev) => prev.map((habit) =>
+      habit.id !== habitId ? habit : {
+        ...habit,
+        topics: habit.topics.map((t) =>
+          t.id !== topicId ? t : { ...t, progress: Number(progress) }
         ),
       }
     ))
   }
 
-  const deleteHabit = (habitId) => {
-    setHabits(habits.filter((h) => h.id !== habitId))
-  }
-
-  return { habits, addHabit, toggleDay, deleteHabit }
+  return { habits, addHabit, addStudyHabit, toggleDay, deleteHabit, addTopic, updateTopicProgress }
 }
 
 export default useHabits
